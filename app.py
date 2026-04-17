@@ -105,6 +105,10 @@ with tab1:
 
         fig = px.bar(df_plot, x="Feature", y="Value", title="Input Contribution")
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown(
+    "<p style='text-align:center; color:gray;'>© Aniruddha Jarandikar. All rights reserved.</p>",
+    unsafe_allow_html=True
+)
 
 
 # =========================
