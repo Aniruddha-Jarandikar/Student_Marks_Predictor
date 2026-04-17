@@ -2,7 +2,7 @@ import streamlit as st
 import pickle
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.express as px
 
 # Load model & scaler
 model = pickle.load(open("model.pkl", "rb"))
@@ -11,13 +11,35 @@ scaler = pickle.load(open("scaler.pkl", "rb"))
 # Page config
 st.set_page_config(page_title="Student Performance Dashboard", layout="wide")
 
+# Premium CSS
+st.markdown("""
+<style>
+body {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+}
+.main {
+    background-color: rgba(255,255,255,0.03);
+    padding: 20px;
+    border-radius: 15px;
+}
+.stButton>button {
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    color: white;
+    border-radius: 10px;
+    height: 3em;
+    width: 100%;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # Title
-st.title("Student Performance Prediction Dashboard")
-st.caption("Built by Aniruddha")
+st.title("Student Performance Dashboard")
+st.caption("Machine Learning Based Prediction System")
 
 st.markdown("---")
 
-# Sidebar inputs
+# Sidebar
 st.sidebar.header("Input Parameters")
 
 study_hours = st.sidebar.slider("Study Hours", 0.0, 12.0, 5.0)
@@ -36,7 +58,6 @@ with tab1:
 
     if st.button("Predict"):
 
-        # Feature engineering
         study_efficiency = study_hours * attendance
         health_index = sleep_hours * 10
 
@@ -50,14 +71,12 @@ with tab1:
             ]
         )
 
-        # Prediction
         scaled = scaler.transform(student_data)
         prediction = model.predict(scaled)
         prediction = np.clip(prediction, 0, 100)[0]
 
         st.subheader(f"Predicted Marks: {prediction:.2f}")
 
-        # Performance message
         if prediction > 80:
             st.success("Excellent performance expected")
         elif prediction > 60:
@@ -74,21 +93,17 @@ with tab1:
         if attendance < 70:
             st.warning("Maintain better attendance")
 
-        # Graph
+        # Plotly Chart (interactive)
         labels = ['Study', 'Attendance', 'Previous', 'Sleep', 'Extra']
         values = [study_hours, attendance/10, prev_score/10, sleep_hours*2, extra_classes*2]
 
-        fig, ax = plt.subplots()
-        ax.bar(labels, values)
-        ax.set_title("Input Contribution")
-        st.pyplot(fig)
+        df_plot = pd.DataFrame({
+            "Feature": labels,
+            "Value": values
+        })
 
-        # Download result
-        st.download_button(
-            label="Download Result",
-            data=f"Predicted Marks: {prediction:.2f}",
-            file_name="result.txt"
-        )
+        fig = px.bar(df_plot, x="Feature", y="Value", title="Input Contribution")
+        st.plotly_chart(fig, use_container_width=True)
 
 
 # =========================
@@ -100,7 +115,6 @@ with tab2:
 
     col1, col2 = st.columns(2)
 
-    # Student A
     with col1:
         st.markdown("Student A")
         a_study = st.slider("Study Hours A", 0.0, 12.0, 5.0)
@@ -109,7 +123,6 @@ with tab2:
         a_sleep = st.slider("Sleep Hours A", 0.0, 12.0, 7.0)
         a_extra = st.slider("Extra Classes A", 0, 10, 2)
 
-    # Student B
     with col2:
         st.markdown("Student B")
         b_study = st.slider("Study Hours B", 0.0, 12.0, 6.0)
@@ -141,14 +154,16 @@ with tab2:
         st.markdown(f"Student A: {pred_a:.2f}")
         st.markdown(f"Student B: {pred_b:.2f}")
 
-        # Highlight better student
         if pred_a > pred_b:
             st.success("Student A is performing better")
         else:
             st.success("Student B is performing better")
 
-        # Graph
-        fig, ax = plt.subplots()
-        ax.bar(['Student A', 'Student B'], [pred_a, pred_b])
-        ax.set_title("Comparison Result")
-        st.pyplot(fig)
+        # Plotly comparison
+        df_compare = pd.DataFrame({
+            "Student": ["A", "B"],
+            "Marks": [pred_a, pred_b]
+        })
+
+        fig2 = px.bar(df_compare, x="Student", y="Marks", title="Comparison Result")
+        st.plotly_chart(fig2, use_container_width=True)
