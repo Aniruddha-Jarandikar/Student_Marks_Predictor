@@ -168,3 +168,7 @@ with tab2:
 
         fig2 = px.bar(df_compare, x="Student", y="Marks", title="Comparison Result")
         st.plotly_chart(fig2, use_container_width=True)
+        st.markdown(
+    "<p style='text-align:center; color:gray;'>© Aniruddha Jarandikar. All rights reserved.</p>",
+    unsafe_allow_html=True
+)
