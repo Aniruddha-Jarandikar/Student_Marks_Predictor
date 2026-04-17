@@ -36,6 +36,7 @@ body {
 # Title
 st.title("Student Performance Dashboard")
 st.caption("Machine Learning Based Prediction System")
+st.markdown("<p style='color:gray;'>By Aniruddha Jarandikar</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 
