@@ -11,7 +11,7 @@ scaler = pickle.load(open("scaler.pkl", "rb"))
 # Page config
 st.set_page_config(page_title="Student Performance Dashboard", layout="wide")
 
-# Custom CSS (clean professional UI)
+# Custom CSS
 st.markdown("""
 <style>
 body {
@@ -33,14 +33,15 @@ h1, h2, h3 {
 
 # Title
 st.title("Student Performance Prediction Dashboard")
+st.write("Model Accuracy (R² Score): 0.83")
 
 st.markdown("---")
 
-# Tabs for features
+# Tabs
 tab1, tab2 = st.tabs(["Single Prediction", "Compare Students"])
 
 # =========================
-#  TAB 1: Single Prediction
+# TAB 1: Single Prediction
 # =========================
 with tab1:
 
@@ -76,6 +77,14 @@ with tab1:
 
         st.markdown(f"### Predicted Marks: {prediction:.2f}")
 
+        # Performance message
+        if prediction > 80:
+            st.success("Excellent performance expected")
+        elif prediction > 60:
+            st.warning("Average performance")
+        else:
+            st.error("Needs improvement")
+
         # Graph
         labels = ['Study', 'Attendance', 'Previous', 'Sleep', 'Extra']
         values = [study_hours, attendance/10, prev_score/10, sleep_hours*2, extra_classes*2]
@@ -86,7 +95,7 @@ with tab1:
         st.pyplot(fig)
 
 # =========================
-#  TAB 2: Comparison
+# TAB 2: Compare Students
 # =========================
 with tab2:
 
@@ -94,7 +103,6 @@ with tab2:
 
     col1, col2 = st.columns(2)
 
-    # Student A
     with col1:
         st.subheader("Student A")
         a_study = st.slider("Study Hours A", 0.0, 12.0, 5.0)
@@ -103,7 +111,6 @@ with tab2:
         a_sleep = st.slider("Sleep Hours A", 0.0, 12.0, 7.0)
         a_extra = st.slider("Extra Classes A", 0, 10, 2)
 
-    # Student B
     with col2:
         st.subheader("Student B")
         b_study = st.slider("Study Hours B", 0.0, 12.0, 6.0)
@@ -118,12 +125,15 @@ with tab2:
             eff = s * a
             health = sl * 10
 
-            df = pd.DataFrame([[s, a, p, sl, e, eff, health]],
+            df = pd.DataFrame(
+                [[s, a, p, sl, e, eff, health]],
                 columns=[
                     'Study_Hours', 'Attendance_%', 'Previous_Score',
                     'Sleep_Hours', 'Extra_Classes',
                     'Study_Efficiency', 'Health_Index'
-                ])
+                ]
+            )
+
             scaled = scaler.transform(df)
             pred = model.predict(scaled)
             return np.clip(pred, 0, 100)[0]
@@ -134,7 +144,6 @@ with tab2:
         st.markdown(f"### Student A: {pred_a:.2f}")
         st.markdown(f"### Student B: {pred_b:.2f}")
 
-        # Comparison graph
         fig, ax = plt.subplots()
         ax.bar(['Student A', 'Student B'], [pred_a, pred_b])
         ax.set_title("Predicted Marks Comparison")
